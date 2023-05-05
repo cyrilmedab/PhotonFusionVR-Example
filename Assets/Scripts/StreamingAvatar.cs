@@ -1,18 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
+using Oculus.Avatar2;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class StreamingAvatar : MonoBehaviour
+public class StreamingAvatar : OvrAvatarEntity
 {
-    // Start is called before the first frame update
-    void Start()
+    public OculusInitializer oculusInitializer;
+    
+    public void StartAvatar(OculusInitializer player)
     {
-        
+        oculusInitializer = player;
+        _userId = oculusInitializer.userId;
+        StartCoroutine(LoadAvatarWIthId());
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator LoadAvatarWIthId()
     {
-        
+        var hasAvatarRequest = OvrAvatarManager.Instance.UserHasAvatarAsync(_userId);
+        while (!hasAvatarRequest.IsCompleted) { yield return null; }
+        LoadUser();
     }
 }
