@@ -11,7 +11,7 @@ public class StreamingAvatar : OvrAvatarEntity
 {
     public OculusInitializer networkCon;
     // TODO: Remove this and make it unnecessary
-    public GameObject mainCam;
+    //public GameObject mainCam;
     
     private PhotonView view;
     private byte[] _avatarBytes;
@@ -43,7 +43,7 @@ public class StreamingAvatar : OvrAvatarEntity
         {
             SetIsLocal(false);
             _creationInfo.features = Oculus.Avatar2.CAPI.ovrAvatar2EntityFeatures.Preset_Remote;
-            mainCam.SetActive(false);
+            //mainCam.SetActive(false);
         }
 
         SetBodyTracking(FindObjectOfType<SampleInputManager>());
