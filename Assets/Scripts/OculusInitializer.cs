@@ -116,7 +116,7 @@ public class OculusInitializer : MonoBehaviourPunCallbacks
         base.OnConnectedToMaster();
         RoomOptions roomOptions = new RoomOptions
         {
-            MaxPlayers = (byte)playersPerRoom,
+            MaxPlayers = 15,
             IsVisible = true,
             IsOpen = true
         };
