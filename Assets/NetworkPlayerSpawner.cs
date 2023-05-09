@@ -21,11 +21,8 @@ public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
 
     private Transform DecideSpawnPoint()
     {
-        _spawnInd = 3;
         Transform spawnPoint = playerSpawnPoints[_spawnInd];
         _spawnInd = (_spawnInd + 1) % playerSpawnPoints.Length;
-        Debug.Log(_spawnInd);
-        Debug.Log($"{spawnPoint.position.x} {spawnPoint.position.y} {spawnPoint.position.z}");
         return spawnPoint;
     }
 
