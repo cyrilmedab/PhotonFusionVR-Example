@@ -1,15 +1,19 @@
+using System;
 using UnityEngine;
 using Photon.Pun;
 
 public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
 {
-    // Player Game Object - Assigned on join
-    private GameObject _spawnedPlayerRig;
-    
+    // Player's owned rig for their scene
+    [SerializeField] private GameObject oculusRig;
+    // Prefab to be instantiated on connection
+    [SerializeField] private GameObject avatarPrefab;
     // Spawn Positions
     [SerializeField] private Transform[] playerSpawnPoints;
-    private int _spawnInd;
     
+    // Player's spawned avatar in the scene
+    private GameObject _spawnedPlayerAvatar;
+
     // Spawning a rig object for the player when joining a room
     public override void OnJoinedRoom()
     {
@@ -21,21 +25,29 @@ public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
 
     private Transform DecideSpawnPoint()
     {
-        Transform spawnPoint = playerSpawnPoints[_spawnInd];
-        _spawnInd = (_spawnInd + 1) % playerSpawnPoints.Length;
-        return spawnPoint;
+        int playerCount = PhotonNetwork.PlayerList.Length;
+        int spawnInd = (playerCount - 1) % playerSpawnPoints.Length;
+        return playerSpawnPoints[spawnInd];
     }
 
     private void SpawnPlayer(Transform spawnPoint)
     {
-        _spawnedPlayerRig = PhotonNetwork.Instantiate("OculusRig_Pun2",
+        oculusRig.transform.position = spawnPoint.position;
+        oculusRig.transform.rotation = spawnPoint.rotation;
+        
+        object[] idObjects = {Convert.ToInt64(OculusManager.Instance.userID)};
+        _spawnedPlayerAvatar = PhotonNetwork.Instantiate(avatarPrefab.name,
             spawnPoint.position,
-            spawnPoint.rotation);
+            spawnPoint.rotation,
+            0,
+            idObjects);
+        _spawnedPlayerAvatar.GetComponent<PunAvatarEntity>().SetParent(oculusRig.transform.GetChild(0));
+
     }
 
     public override void OnLeftRoom()
     {
         base.OnLeftRoom();
-        PhotonNetwork.Destroy(_spawnedPlayerRig);
+        PhotonNetwork.Destroy(_spawnedPlayerAvatar);
     }
 }

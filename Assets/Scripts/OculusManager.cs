@@ -4,6 +4,22 @@ using System.Collections;
 
 public class OculusManager : MonoBehaviour
 {
+    // User's personal Oculus ID, will be used for their Meta Avatar
+    public ulong userID;
+
+    private static OculusManager _oculusManager;
+
+    public static OculusManager Instance => _oculusManager;
+
+    private void Awake()
+    {
+        if (_oculusManager == null) _oculusManager = this;
+        else Destroy(gameObject);
+        
+        StartCoroutine(StartOvrPlatform());
+    }
+    
+    /*
     // Starts the entitlement check procedures on application awake
     private void Awake()
     {
@@ -39,7 +55,7 @@ public class OculusManager : MonoBehaviour
             StartCoroutine(StartOvrPlatform());
         }
     }
-    
+    */
     private IEnumerator StartOvrPlatform()
     {
         // Ensure OvrPlatform is Initialized
@@ -52,39 +68,36 @@ public class OculusManager : MonoBehaviour
         {
             if (OvrPlatformInit.status == OvrPlatformInitStatus.Failed)
             {
-                Debug.Log("Error initializing OvrPlatform.");
+                Debug.LogError("Error initializing OvrPlatform.");
                 //OvrAvatarLog.LogError($"Error initializing OvrPlatform. Falling back to local avatar", _sampleAvatar);
                 //LoadLocalAvatar();
                 yield break;
             }
-
             yield return null;
         }
         
         GetComponent<NetworkManager>().ConnectToServer();
 
         // user ID == 0 means we want to load logged in user avatar from CDN
-        /*if (userId == 0)
+        
+        // Get User ID
+        Users.GetLoggedInUser().OnComplete(message =>
         {
-            // Get User ID
-            Users.GetLoggedInUser().OnComplete(message =>
+            if (message.IsError)
             {
-                if (message.IsError)
-                {
-                    var e = message.GetError();
-                    //Debug.Log($"Error loading CDN Avatar: {e.Message}.");
-                    //OvrAvatarLog.LogError($"Error loading CDN avatar: {e.Message}. " +
-                                        //  "Falling back to local avatar", _sampleAvatar);
-                }
-                else
-                {
-                    userId = message.Data.ID;
-                    ConnectToServer();
-                    // TODO: build multiplayer login room
-                    //_streamingAvatar.gameObject.SetActive(true);
-                    //_streamingAvatar.StartAvatar(this);
-                }
-            });
-        }*/
+                var e = message.GetError(); 
+                Debug.LogError($"Error loading CDN Avatar: {e.Message}.");
+                //OvrAvatarLog.LogError($"Error loading CDN avatar: {e.Message}. " +
+                //  "Falling back to local avatar", _sampleAvatar);
+            }
+            else
+            {
+                userID = message.Data.ID;
+                GetComponent<NetworkManager>().ConnectToServer();
+                // TODO: build multiplayer login room
+                //_streamingAvatar.gameObject.SetActive(true);
+                //_streamingAvatar.StartAvatar(this);
+            }
+        });
     }
 }
