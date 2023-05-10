@@ -2,14 +2,14 @@ using UnityEngine;
 using Oculus.Platform;
 using System.Collections;
 
-public class OculusManager : MonoBehaviour
+public class A3_OculusManager : MonoBehaviour
 {
     // User's personal Oculus ID, will be used for their Meta Avatar
     public ulong userID;
 
-    private static OculusManager _oculusManager;
+    private static A3_OculusManager _oculusManager;
 
-    public static OculusManager Instance => _oculusManager;
+    public static A3_OculusManager Instance => _oculusManager;
 
     private void Awake()
     {
@@ -64,10 +64,11 @@ public class OculusManager : MonoBehaviour
             OvrPlatformInit.InitializeOvrPlatform();
         }
 
-        while (OvrPlatformInit.status == OvrPlatformInitStatus.Initializing) yield return null;
+        yield return new WaitForSeconds(5);
         /*
         while (OvrPlatformInit.status != OvrPlatformInitStatus.Succeeded)
         {
+            
             if (OvrPlatformInit.status == OvrPlatformInitStatus.Failed)
             {
                 Debug.LogError("Error initializing OvrPlatform.");
@@ -76,9 +77,10 @@ public class OculusManager : MonoBehaviour
                 yield break;
             }
             yield return null;
-        } */
+        }
+        */
         
-        GetComponent<NetworkManager>().ConnectToServer();
+        //GetComponent<NetworkManager>().ConnectToServer();
 
         // user ID == 0 means we want to load logged in user avatar from CDN
         
@@ -89,8 +91,10 @@ public class OculusManager : MonoBehaviour
             {
                 var e = message.GetError(); 
                 Debug.LogError($"Error loading CDN Avatar: {e.Message}.");
+                
                 //OvrAvatarLog.LogError($"Error loading CDN avatar: {e.Message}. " +
                 //  "Falling back to local avatar", _sampleAvatar);
+                GetComponent<NetworkManager>().ConnectToServer();
             }
             else
             {
