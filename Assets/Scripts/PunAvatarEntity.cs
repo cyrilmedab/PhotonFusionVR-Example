@@ -92,7 +92,6 @@ public class PunAvatarEntity : OvrAvatarEntity
         {
             _avatarBytes = RecordStreamData(activeStreamLod);
             view.RPC(nameof(RPC_PlayAvatarData), RpcTarget.Others);
-            Debug.Log("Numberof Players" + PhotonNetwork.PlayerList.Length);
             yield return _waitTime;
         }
     }
