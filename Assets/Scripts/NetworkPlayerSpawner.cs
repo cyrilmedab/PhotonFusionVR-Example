@@ -37,11 +37,13 @@ public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
         
         object[] idObjects = {Convert.ToInt64(OculusManager.Instance.userID)};
         _spawnedPlayerAvatar = PhotonNetwork.Instantiate(avatarPrefab.name, 
-            Vector3.zero,
-            Quaternion.identity,
+            spawnPoint.position,
+            spawnPoint.rotation,
             0,
             idObjects);
-        _spawnedPlayerAvatar.GetComponent<PunAvatarEntity>().SetParent(oculusRig.transform.GetChild(0));
+        
+        _spawnedPlayerAvatar.transform.parent = oculusRig.transform.GetChild(0);
+        //_spawnedPlayerAvatar.GetComponent<PunAvatarEntity>().SetParent(oculusRig.transform.GetChild(0));
 
     }
 

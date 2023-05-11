@@ -64,8 +64,6 @@ public class OculusManager : MonoBehaviour
             OvrPlatformInit.InitializeOvrPlatform();
         }
 
-        while (OvrPlatformInit.status == OvrPlatformInitStatus.Initializing) yield return null;
-        /*
         while (OvrPlatformInit.status != OvrPlatformInitStatus.Succeeded)
         {
             if (OvrPlatformInit.status == OvrPlatformInitStatus.Failed)
@@ -76,7 +74,7 @@ public class OculusManager : MonoBehaviour
                 yield break;
             }
             yield return null;
-        } */
+        } 
         
         //GetComponent<NetworkManager>().ConnectToServer();
 
