@@ -17,17 +17,26 @@ public class PunAvatarEntity : OvrAvatarEntity
         base.Awake();
     }
 
-    private void Start()
-    {
-        _userId = GetUserIdFromPhotonInstantiationData();
-        StartCoroutine(LoadAvatarWIthId());
-    }
+    // private void Start()
+    // {
+    //     _userId = GetUserIdFromParentPhotonInstantiationData();
+    //     StartCoroutine(LoadAvatarWIthId());
+    // }
 
-    public void SetParent(Transform parent)
+    // public void SetParent(Transform parent)
+    // {
+    //     if (view.IsMine) transform.parent = parent;
+    // }
+    
+    // get user ID from the parent view of the avatar, which for us is the toot of the rig
+    private ulong GetUserIdFromParentPhotonInstantiationData()
     {
-        if (view.IsMine) transform.parent = parent;
+        PhotonView parentView = GetComponentInParent<PhotonView>();
+        object[] instantiationData = parentView.InstantiationData;
+        Int64 dataInt = Convert.ToInt64(instantiationData[0]);
+        return Convert.ToUInt64(dataInt);
     }
-
+    
     private ulong GetUserIdFromPhotonInstantiationData()
     {
         object[] instantiationData = view.InstantiationData;
@@ -37,16 +46,18 @@ public class PunAvatarEntity : OvrAvatarEntity
 
     private void ConfigureAvatarEntity()
     {
-        // get user ID from the rig parent
-        /*
-        PhotonView parentView = GetComponentInParent<PhotonView>();
-        object[] args = parentView.InstantiationData;
-        Int64 avatarId = (Int64)args[0];
-        _userId = Convert.ToUInt64(avatarId);
-        */
+        view = GetComponent<PhotonView>();
+        _userId = GetUserIdFromParentPhotonInstantiationData();
+        
+        //
+        // PhotonView parentView = GetComponentInParent<PhotonView>();
+        // object[] args = parentView.InstantiationData;
+        // Int64 avatarId = (Int64)args[0];
+        // _userId = Convert.ToUInt64(avatarId);
+        //
         
         // avatar view for streaming
-        view = GetComponent<PhotonView>();
+        
         if (view.IsMine)
         {
             SetIsLocal(true);
@@ -62,7 +73,8 @@ public class PunAvatarEntity : OvrAvatarEntity
             SetIsLocal(false);
             _creationInfo.features = Oculus.Avatar2.CAPI.ovrAvatar2EntityFeatures.Preset_Remote;
         }
-        //StartCoroutine(LoadAvatarWIthId());
+        
+        StartCoroutine(LoadAvatarWIthId());
     }
     
     private IEnumerator LoadAvatarWIthId()
@@ -75,7 +87,6 @@ public class PunAvatarEntity : OvrAvatarEntity
     protected override void OnUserAvatarLoaded()
     {
         AvatarCreated();
-        base.OnUserAvatarLoaded();
     }
     
     public void AvatarCreated()

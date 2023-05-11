@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1110291879373379574}
   - component: {fileID: 5723173460042933079}
   m_Layer: 0
-  m_Name: PunAvatar
+  m_Name: FinalPunAvatar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,7 +57,7 @@ MonoBehaviour:
       viewFlags: 3
       subMeshInclusionFlags: 2047
       highQualityFlags: 0
-  _activeView: 2
+  _activeView: 1
   _activeManifestation: 2
   _activeSubMeshes: 2047
   _activeSubMeshesIncludeUntyped: 1
