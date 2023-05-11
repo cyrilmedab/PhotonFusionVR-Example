@@ -14,7 +14,9 @@ public class PunAvatarEntity : OvrAvatarEntity
     protected override void Awake()
     {
         ConfigureAvatarEntity();
+        Debug.Log($"USER-ID Before the Rest of Awake {gameObject.name}: {_userId}");
         base.Awake();
+        Debug.Log($"USER-ID After the Rest of Awake {gameObject.name}: {_userId}");
     }
 
     // private void Start()
@@ -47,7 +49,8 @@ public class PunAvatarEntity : OvrAvatarEntity
     private void ConfigureAvatarEntity()
     {
         view = GetComponent<PhotonView>();
-        _userId = GetUserIdFromParentPhotonInstantiationData();
+        _userId = GetUserIdFromPhotonInstantiationData();
+        Debug.Log($"USER-ID from PhotonView {gameObject.name}: {_userId}");
         
         //
         // PhotonView parentView = GetComponentInParent<PhotonView>();
@@ -79,7 +82,9 @@ public class PunAvatarEntity : OvrAvatarEntity
     
     private IEnumerator LoadAvatarWIthId()
     {
+        Debug.Log($"USER-ID Before LoadAvatar {gameObject.name}: {_userId}");
         var hasAvatarRequest = OvrAvatarManager.Instance.UserHasAvatarAsync(_userId);
+        Debug.Log($"USER-ID After LoadAvatar {gameObject.name}: {_userId}");
         while (!hasAvatarRequest.IsCompleted) { yield return null; }
         LoadUser();
     }
@@ -110,17 +115,12 @@ public class PunAvatarEntity : OvrAvatarEntity
     [PunRPC]
     public void RPC_PlayAvatarData(byte[] newMovement)
     {
+        Debug.Log($"USER-ID in the RPC (from the remote) {gameObject.name}: {_userId}");
         if (newMovement != null)
         {
             _avatarBytes = newMovement;
             ApplyStreamData(_avatarBytes);
-            Debug.Log("Applied the Stream Data");
         }
-        else
-        {
-            Debug.LogError("ERROR: DID NOT APPLY STREAM DATA RPC");
-        }
+        else Debug.LogError("ERROR: DID NOT APPLY STREAM DATA RPC");
     }
-
-    
 }

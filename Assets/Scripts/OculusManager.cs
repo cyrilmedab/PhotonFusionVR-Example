@@ -6,11 +6,10 @@ public class OculusManager : MonoBehaviour
 {
     // User's personal Oculus ID, will be used for their Meta Avatar
     public ulong userID;
-
-    private static OculusManager _oculusManager;
-
+    
     public static OculusManager Instance => _oculusManager;
-
+    private static OculusManager _oculusManager;
+    
     private void Awake()
     {
         if (_oculusManager == null) _oculusManager = this;
