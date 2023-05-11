@@ -415,11 +415,11 @@ PrefabInstance:
       objectReference: {fileID: 766103853732062587}
     - target: {fileID: 7192818547683320682, guid: f39a9d103c4129b42a53567f6cd8356a, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7192818547689909906, guid: f39a9d103c4129b42a53567f6cd8356a, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8031879260605796270, guid: f39a9d103c4129b42a53567f6cd8356a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1176,9 +1176,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5781070711683637503, guid: 9541023f498972446aa9620cdafe39db, type: 3}
+      propertyPath: mainCamera
+      value: 
+      objectReference: {fileID: 2957299344557098298}
     - target: {fileID: 7922758919413417797, guid: 9541023f498972446aa9620cdafe39db, type: 3}
       propertyPath: sceneViewId
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9541023f498972446aa9620cdafe39db, type: 3}
+--- !u!1 &2957299344557098298 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5087099976481390605, guid: 9541023f498972446aa9620cdafe39db, type: 3}
+  m_PrefabInstance: {fileID: 8039895568064972087}
+  m_PrefabAsset: {fileID: 0}

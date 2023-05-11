@@ -10,8 +10,9 @@ public class A3_PunAvatarEntity : OvrAvatarEntity
     private PhotonView parentView;
     private byte[] _avatarBytes;
     private WaitForSeconds _waitTime = new(0.08f);
-    
 
+    [SerializeField] private GameObject mainCamera;
+    
     protected override void Awake()
     {
         ConfigureAvatarEntity();
@@ -20,7 +21,7 @@ public class A3_PunAvatarEntity : OvrAvatarEntity
 
     private void Start()
     {
-        _userId = GetUserIdFromPhotonInstantiationData();
+        //_userId = GetUserIdFromPhotonInstantiationData();
         //StartCoroutine(LoadAvatarWIthId());
     }
 /*
@@ -66,6 +67,7 @@ public class A3_PunAvatarEntity : OvrAvatarEntity
         {
             SetIsLocal(false);
             _creationInfo.features = Oculus.Avatar2.CAPI.ovrAvatar2EntityFeatures.Preset_Remote;
+            mainCamera.SetActive(false);
         }
         StartCoroutine(LoadAvatarWIthId());
     }
@@ -96,15 +98,25 @@ public class A3_PunAvatarEntity : OvrAvatarEntity
         while (true) 
         {
             _avatarBytes = RecordStreamData(activeStreamLod);
-            view.RPC(nameof(RPC_PlayAvatarData), RpcTarget.Others);
+            view.RPC(nameof(RPC_PlayAvatarData), RpcTarget.Others, _avatarBytes);
             yield return _waitTime;
         }
     }
 
     [PunRPC]
-    public void RPC_PlayAvatarData()
+    public void RPC_PlayAvatarData(byte[] bytesToSend)
     {
-        if (_avatarBytes != null) ApplyStreamData(_avatarBytes);
+        Debug.Log("CALLING THE RPC FUNCTION");
+        if (bytesToSend != null)
+        {
+            _avatarBytes = bytesToSend;
+            ApplyStreamData(_avatarBytes);
+            Debug.Log("Applied the Stream Data");
+        }
+        else
+        {
+            Debug.LogError("ERROR: DID NOT APPLY STREAM DATA RPC");
+        }
     }
 
     

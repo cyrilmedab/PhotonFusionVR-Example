@@ -91,15 +91,24 @@ public class PunAvatarEntity : OvrAvatarEntity
         while (true) 
         {
             _avatarBytes = RecordStreamData(activeStreamLod);
-            view.RPC(nameof(RPC_PlayAvatarData), RpcTarget.Others);
+            view.RPC(nameof(RPC_PlayAvatarData), RpcTarget.Others, _avatarBytes);
             yield return _waitTime;
         }
     }
 
     [PunRPC]
-    public void RPC_PlayAvatarData()
+    public void RPC_PlayAvatarData(byte[] newMovement)
     {
-        if (_avatarBytes != null) ApplyStreamData(_avatarBytes);
+        if (newMovement != null)
+        {
+            _avatarBytes = newMovement;
+            ApplyStreamData(_avatarBytes);
+            Debug.Log("Applied the Stream Data");
+        }
+        else
+        {
+            Debug.LogError("ERROR: DID NOT APPLY STREAM DATA RPC");
+        }
     }
 
     

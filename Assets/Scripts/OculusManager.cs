@@ -78,7 +78,7 @@ public class OculusManager : MonoBehaviour
             yield return null;
         } */
         
-        GetComponent<NetworkManager>().ConnectToServer();
+        //GetComponent<NetworkManager>().ConnectToServer();
 
         // user ID == 0 means we want to load logged in user avatar from CDN
         
