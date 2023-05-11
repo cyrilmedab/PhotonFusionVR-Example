@@ -25,7 +25,7 @@ public class PunAvatarEntity : OvrAvatarEntity
 
     public void SetParent(Transform parent)
     {
-        if (view.IsMine) transform.SetParent(parent);
+        if (view.IsMine) transform.parent = parent;
     }
 
     private ulong GetUserIdFromPhotonInstantiationData()
