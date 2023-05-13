@@ -1,102 +1,185 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.Serialization;
 
 public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
 {
-    // Player's owned rig for their scene
-    [SerializeField] private GameObject oculusRig;
-    // Reference to the overhead camera object that shows the scene before the player spawns in
-    [SerializeField] private GameObject startCamera;
-    // Prefab to be instantiated on connection
-    [SerializeField] private GameObject avatarPrefab;
-    // Spawn Positions
-    [SerializeField] private Transform[] playerSpawnPoints;
+    [Tooltip("Root of the player's Oculus Integration OVR Rig.")] [SerializeField] 
+    private GameObject oculusRig;
     
-    // Player's spawned avatar in the scene
+    [Tooltip("Meta Avatar prefab located in the Resources folder.")] [SerializeField] 
+    private GameObject avatarPrefab;
+    
+    [Tooltip("The player's initial \"loading\" location before the spawn point is determined.")] [SerializeField] 
+    private Transform startTransform;
+
+    [Tooltip("The rate that the player travels from the start to spawn point.")] [Range(0.001f, 1.0f)] [SerializeField] 
+    private float loadingSpeed;
+    
+    [Tooltip("TESTING")] [SerializeField] 
+    private SpawnPointManager spawnPointManager;
+
+    // [Tooltip("Whether or not players should have strictly unique spawn points.")] [SerializeField]
+    // private bool reusableSpawns;
+    //
+    // [Tooltip("Ordered from first to last, the spawn points for the player.")] [SerializeField] 
+    // private List<Vector3> playerSpawnPoints;
+    //
+    // // Reference to a NetworkManager instance that should be attached to the same Game Object
+    // private NetworkManager _networkManager;
+    
+    // Reference to the player's avatar once it's spawned in.
     private GameObject _spawnedPlayerAvatar;
     
-    // Singleton implementation to allow for easy reference to Camera and spawn point manipulation (for the future)
-    private static NetworkPlayerSpawner _networkPlayerSpawner;
-    public NetworkPlayerSpawner Instance => _networkPlayerSpawner;
-    
-    [Tooltip("The speed at which the start camera moves to the player's spawn position")]
-    [Range(0.001f, 1.0f)]
-    [SerializeField] private float startCameraSpeed;
-    [Tooltip("Smooth the camera transition by estimating the player height at spawn")]
-    [SerializeField] private float playerHeightOffset = 1.6f;
+    // // Stack used to keep track of used and available player spawn points, derived from playerSpawnPoints
+    // public Stack<Vector3> availableSpawnStack;
+    //
+    // // This player's determined spawn transform
+    // private Vector3 _spawnPoint;
 
     private void Awake()
     {
-        // Basic singleton check to ensure that multiple instances of the class never occur
-        if (_networkPlayerSpawner == null) _networkPlayerSpawner = this;
-        else Destroy(gameObject);
+        // Sets the player rig to the desired starting orientation
+        oculusRig.transform.position = startTransform.position;
+        oculusRig.transform.rotation = startTransform.rotation;
     }
-
-    // Spawning a rig object for the player when joining a room
-    public override void OnJoinedRoom()
+ /*   
+    #region Spawn List Handling
+    
+    // Sets the spawn list when the player is going to be the first person in the room
+    public void PrepareSpawnListForNetwork()
     {
-        base.OnJoinedRoom();
-
-        Transform spawnPoint = DecideSpawnPoint();
-        StartCoroutine(LerpStartCamera(spawnPoint));
-        //SpawnPlayer(spawnPoint);
-    }
-
-    private Transform DecideSpawnPoint()
-    {
-        int playerCount = PhotonNetwork.PlayerList.Length;
-        int spawnInd = (playerCount - 1) % playerSpawnPoints.Length;
-        return playerSpawnPoints[spawnInd];
-    }
-
-    private IEnumerator LerpStartCamera(Transform spawnPoint)
-    {
-        Vector3 startPosition = startCamera.transform.position;
-        Quaternion startRotation = startCamera.transform.rotation;
-
-        Vector3 endPosition = spawnPoint.position + new Vector3(0, playerHeightOffset, 0);
-        Quaternion endRotation = spawnPoint.rotation;
-
-        float progress = 0f;
+        // If no spawns were added or list is null, creates a new spawn list of one spawn point at origin
+        if (!playerSpawnPoints.Any())
+        {
+            Debug.LogError("No spawn points added. Spawns will default to origin position and rotation.");
+            playerSpawnPoints = new List<Vector3> { Vector3.zero };
+        }
         
+        // Checks if we need to have at least as many spawn points as possible players
+        if (!reusableSpawns) PopulateSpawnList();
+        
+        // Transforms our list into a stack
+        GenerateSpawnStack();
+    }
+    
+    // Called if spawn points are not reusable. Adds to the list until the number of spawn points equals max players
+    private void PopulateSpawnList()
+    {
+        // Logs a warning if there are too many spawn points but doesn't reduce the list
+        if (playerSpawnPoints.Count > _networkManager.maxPlayersPerRoom)
+        {
+            Debug.LogWarning("Set spawn points exceeds max player count. Not all spawn points will be used.");
+        }
+        
+        // If the list is underpopulated, adds new spawn points based off an arbitrary offset of the last position.
+        // Continues until the list matches the max player count.
+        var lastListedSpawnPoint = playerSpawnPoints[^1];
+        var offset = new Vector3(0, 0, 1);
+        
+        while (playerSpawnPoints.Count < _networkManager.maxPlayersPerRoom)
+        {
+            Debug.LogWarning("Not enough spawn points to account for all players. Generating a new position.");
+
+            var newSpawnPoint = lastListedSpawnPoint + offset;
+            
+            playerSpawnPoints.Add(newSpawnPoint);
+            lastListedSpawnPoint = newSpawnPoint;
+        }
+    }
+    
+    // Populates the spawn stack using a reversed copy of the original spawn list, not modifying the list
+    private void GenerateSpawnStack()
+    {
+        availableSpawnStack = new Stack<Vector3>(Enumerable.Reverse(playerSpawnPoints));
+    }
+    
+    #endregion
+*/
+ 
+    // Starts the player's spawn. Called by the attached NetworkManager class once the player has joined a room.
+    public void BeginSpawn()
+    {
+        var spawnPoint = spawnPointManager.GetFirstAvailableSpawnPoint();
+        StartCoroutine(LerpToSpawn(spawnPoint));
+    }
+ /*   
+    // Determines the target spawn transform for the player.
+    private void DecideSpawnPoint()
+    {
+        // Resets the selection cycle of spawn targets if spawns are reusable and we've already gone through them all
+        if (reusableSpawns && availableSpawnStack.Count == 0)
+        {
+            GenerateSpawnStack();
+        }
+        
+        // Sets the player's spawn target and removes it from the available list
+        _spawnPoint = availableSpawnStack.Pop();
+    }
+*/
+    // Moves the player towards the previously determined player spawn transform
+    private IEnumerator LerpToSpawn(Vector3 spawnPoint)
+    {
+        // The player's original position and orientation
+        Vector3 startPosition = startTransform.position;
+        Quaternion startRotation = startTransform.rotation;
+
+        // The player's targeted position and orientation
+        Vector3 endPosition = spawnPoint;
+        Quaternion endRotation = Quaternion.identity;
+        
+        // Lerps the player to spawn based on the serialized loadingSpeed variable. 
+        var progress = 0f;
         while (progress < 1f)
         {
-            startCamera.transform.position = Vector3.Lerp(startPosition, endPosition, progress);
-            startCamera.transform.rotation = Quaternion.Lerp(startRotation, endRotation, progress);
-            progress += startCameraSpeed;
+            oculusRig.transform.position = Vector3.Lerp(startPosition, endPosition, progress);
+            oculusRig.transform.rotation = Quaternion.Lerp(startRotation, endRotation, progress);
+            progress += loadingSpeed; 
             yield return null;
         }
-
+        
+        // Begins the actual spawning now that the extra effects are complete
         SpawnPlayer(spawnPoint);
     }
-
-    private void SpawnPlayer(Transform spawnPoint)
+    
+    // Creates the player's Meta Avatar and integrates it with the OVR Rig
+    private void SpawnPlayer(Vector3 spawnPoint)
     {
-        oculusRig.transform.position = spawnPoint.position;
-        oculusRig.transform.rotation = spawnPoint.rotation;
+        // Ensure that the player is oriented at exactly the targeted spawn
+        oculusRig.transform.position = spawnPoint;
+        oculusRig.transform.rotation = Quaternion.identity;
         
+        // Receives the Meta Avatar skin information since this is guaranteed to be the local instance of the avatar
         object[] idObjects = {Convert.ToInt64(OculusManager.Instance.userID)};
-        //Debug.Log($"USER-ID SpawnPlayer for {PhotonNetwork.PlayerList.Length}: {OculusManager.Instance.userID}");
         
-        oculusRig.SetActive(true);
+        // Instantiates the player's Avatar across the network
         _spawnedPlayerAvatar = PhotonNetwork.Instantiate(avatarPrefab.name, 
-            spawnPoint.position,
-            spawnPoint.rotation,
+            spawnPoint,
+            Quaternion.identity,
             0,
             idObjects);
         
+        // Makes the Meta Avatar move with the OVR Camera Rig of the player
         _spawnedPlayerAvatar.transform.parent = oculusRig.transform.GetChild(0);
-        //oculusRig.SetActive(true);
-        //mainCamera.enabled = true;
-        //_spawnedPlayerAvatar.GetComponent<PunAvatarEntity>().SetParent(oculusRig.transform.GetChild(0));
-
+    }
+    
+    // Removes the player avatar across the network
+    public void DespawnPlayer()
+    {
+        spawnPointManager.AddBackSpawnPoint();
+        //if (!reusableSpawns) availableSpawnStack.Push(_spawnPoint);
+        
+        PhotonNetwork.Destroy(_spawnedPlayerAvatar);
     }
 
     public override void OnLeftRoom()
     {
         base.OnLeftRoom();
+        DespawnPlayer();
         PhotonNetwork.Destroy(_spawnedPlayerAvatar);
     }
 }

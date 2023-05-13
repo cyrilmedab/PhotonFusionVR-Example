@@ -4,16 +4,18 @@ using System.Collections;
 
 public class OculusManager : MonoBehaviour
 {
-    // User's personal Oculus ID, will be used for their Meta Avatar
+    // User's personal Oculus ID, will be used for their Meta Avatar.
     public ulong userID;
     
+    // Singleton to allow easy access if choosing to place different network components on separate Game Objects.
     private static OculusManager _oculusManager;
     public static OculusManager Instance => _oculusManager;
     
     private void Awake()
     {
-        if (_oculusManager == null) _oculusManager = this;
-        else Destroy(gameObject);
+        // Basic singleton check to ensure that only one instance of this class exists in the client scene.
+        if (_oculusManager != null && _oculusManager != this) Destroy(gameObject);
+        else _oculusManager = this;
         
         StartCoroutine(StartOvrPlatform());
     }
@@ -92,7 +94,7 @@ public class OculusManager : MonoBehaviour
             else
             {
                 userID = message.Data.ID;
-                GetComponent<NetworkManager>().ConnectToServer();
+                NetworkManager.Instance.ConnectToServer();
                 // TODO: build multiplayer login room
                 //_streamingAvatar.gameObject.SetActive(true);
                 //_streamingAvatar.StartAvatar(this);

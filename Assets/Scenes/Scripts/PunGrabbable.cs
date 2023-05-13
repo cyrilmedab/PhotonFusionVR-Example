@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using Oculus.Interaction;
 using Photon.Pun;
 using UnityEngine;
@@ -12,12 +10,13 @@ public class PunGrabbable : Grabbable
     protected override void Awake()
     {
         _view = GetComponent<PhotonView>();
-        _view.OwnershipTransfer = OwnershipOption.Takeover; //could do this in the inspector, but safer to automate here
-        // remove the above line if we want to have request instead, or anything like that. For us, this is fine
+        // Can choose to automate the ownership option here
+        //_view.OwnershipTransfer = OwnershipOption.Takeover; 
         
         base.Awake();
     }
-
+    
+    // Called by an attached or child Pointable Unity Event Wrapper component to get server permission on grab
     public void RequestOwnership()
     {
         _view.RequestOwnership();
