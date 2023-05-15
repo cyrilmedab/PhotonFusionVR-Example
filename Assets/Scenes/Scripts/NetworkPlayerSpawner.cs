@@ -180,6 +180,6 @@ public class NetworkPlayerSpawner : MonoBehaviourPunCallbacks
     {
         base.OnLeftRoom();
         DespawnPlayer();
-        PhotonNetwork.Destroy(_spawnedPlayerAvatar);
+        //PhotonNetwork.Destroy(_spawnedPlayerAvatar);
     }
 }

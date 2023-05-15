@@ -27,7 +27,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private void Awake()
     {
-        // Basic singleton check to ensure that only one instance of this class exists  in the client scene.
+        // Basic singleton check to ensure that only one instance of this class exists in the client scene.
         if (_networkManager != null && _networkManager != this) Destroy(gameObject);
         else _networkManager = this;
         
